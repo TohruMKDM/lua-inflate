@@ -16,7 +16,7 @@ if not bitOp then
 end
 
 local rshift, lshift, band = bitOp.rshift, bitOp.lshift, bitOp.band
-local byte, char, sub, find = string.byte, string.char, string.sub, string.find
+local byte, char, sub, find, split = string.byte, string.char, string.sub, string.find, string.split
 local concat, unpack = table.concat, unpack or table.unpack
 local min = math.min
 
@@ -220,12 +220,12 @@ stream.__index = stream
 --- Creates a new bitstream object with the specified buffer
 --- @param buffer string
 --- @return Bitstream
-function stream:new(buffer)
+function stream:new(buffer, DIR)
     local comment = find(buffer, 'PK\5\6')
     if comment then
         buffer = sub(buffer, 1, comment + 19)..'\0\0'
     end
-    local object = {buffer = buffer, position = 0, bits = 0, count = 0}
+    local object = {buffer = buffer, position = 0, bits = 0, count = 0, dir = DIR}
     return setmetatable(object, self)
 end
 
@@ -241,6 +241,11 @@ function stream:files()
         local length = int2le(buffer, position + 28)
         local offset = int4le(buffer, position + 42) + 1
         local name = sub(buffer, position + 46, position + 45 + length)
+	if self.dir then
+	local s = split(name, "/")
+	s[1] = self.dir
+	name = concat(s, "/")..(s[2]==nil and "/" or "")
+	end
         position = position + 46 + length + int2le(buffer, position + 30) + int2le(buffer, position + 32)
         return name, offset + 30 + length + int2le(buffer, offset + 28), int4le(buffer, offset + 18), packed
     end
