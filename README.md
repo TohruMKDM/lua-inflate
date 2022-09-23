@@ -1,3 +1,4 @@
+make sure you install coro http if u want the test to work
 # lua-inflate
 lua-inflate is a refactored release of [zzlib](https://github.com/zerkman/zzlib) by [zerkman](https://github.com/zerkman) which is a pure Lua implementation of a depacker for the  zlib DEFLATE([RFC1951](https://www.rfc-editor.org/info/rfc1951)) file format.</br>
 The purpose of this refactor is to optimize the source where possible and allow *limited* support for ZIP archives with comments which the orginal does not support.</br>
