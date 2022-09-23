@@ -39,11 +39,13 @@ print('Done.')
 | position | integer  |    0    | Position in the character buffer  |
 |   bits   | integer  |    0    | Bits buffer                       |
 |  count   | integer  |    0    | Number of bits in the buffer      |
+|   dir    | string   |   nil   | DIR NAME                          |
 
-### inflate:new(buffer)
+### inflate:new(buffer, DIR)
 | Parameter |   Type   |
 | --------- | -------- |
 |  buffer   | string   |
+|    dir    | string   |
 
 Creates a new bitstream object with the specified buffer string.</br>
 **Returns:** [Bitstream](https://github.com/TohruMKDM/lua-inflate#bitstream)
