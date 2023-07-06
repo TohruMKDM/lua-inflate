@@ -24,12 +24,14 @@ http.get('https://files-example-com.github.io/uploads/zip_10MB.zip', function(re
         buffer[#buffer + 1] = chunk
     end)
     response:on('end', function()
-        local stream = inflate:new(table.concat(buffer))
+        local stream = inflate.new(table.concat(buffer))
         local success, err = pcall(function()
             start = os.clock()
-            for name, offset in stream:files() do
+            for name, offset, _, _, crc in stream:files() do
                 files[name] = true
-                stream:inflate(offset)
+                if name:sub(-1) ~= "/" then
+                    stream:inflate(offset, crc)
+                end
             end
             finish = os.clock()
             print('Took '..(finish - start)..'ms to traverse and inflate the ZIP archive')
