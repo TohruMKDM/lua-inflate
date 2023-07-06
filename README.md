@@ -47,8 +47,8 @@ Creates a new bitstream object with the specified buffer string.</br>
 | - | - | - |
 | size | integer | The new chunk size. Preferrably a value with a power of 2 |
 
-Sets the size at which to divide chunks by during byte to string conversion. The default value is `4096`. </br>
-If you encounter any issues with the lua stack it is advised you use this function to lower the chunk size to something like `2048` or even `1024`.
+Sets the size at which to divide chunks by during byte to string conversion. The default value is `4096`.</br>
+If you encounter any issues with the lua stack it is advised you use this function to lower the chunk size to something like `2048` or even `1024`.</br>
 **Returns:** nothing
 
 ### BitStream
