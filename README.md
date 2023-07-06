@@ -13,16 +13,17 @@ Using this module is extremely simple. The following is an example of how you'd 
 local inflate = require('inflate')
 local fs = require('fs')
 
-local stream = inflate:new(fs.readFileSync('file.zip'))
+local stream = inflate.new(assert(fs.readFileSync('file.zip')))
 
-for name, offset, size, packed in stream:files() do
+for name, offset, size, packed, crc in stream:files() do
     -- You can identify sub directories by checking if it's name ends with "/"
     if name:sub(-1) == '/' then
         fs.mkdirSync(name)
     else
         local content
         if packed then
-            content = stream:inflate(offset)
+            -- perform checksum verification
+            content = stream:inflate(offset, crc)
         else
             content = stream:extract(offset, size)
         end
@@ -32,54 +33,67 @@ end
 print('Done.')
 ```
 ## API Reference
-### Bitstream
-|  Fields  |   Type   | Default |            Description            |
-| -------- | -------- | ------- | --------------------------------- |
-|  buffer  |  string  |   nil   | Character buffer                  |
-| position | integer  |    0    | Position in the character buffer  |
-|   bits   | integer  |    0    | Bits buffer                       |
-|  count   | integer  |    0    | Number of bits in the buffer      |
+### BitStream
+| Fields | Type | Default | Description |
+| - | - | - | - |
+| buffer | string | nil | Character buffer |
+| position | integer | 0 | Position in the character buffer |
+| bits | integer | 0 | Bits buffer |
+| count | integer | 0 | Number of bits in the buffer |
 
-### inflate:new(buffer)
-| Parameter |   Type   |
-| --------- | -------- |
-|  buffer   | string   |
+### inflate.new(buffer)
+| Parameter | Type | Description |
+| - | - | - |
+| buffer | string | The data to be used in the BitStream |
 
 Creates a new bitstream object with the specified buffer string.</br>
-**Returns:** [Bitstream](https://github.com/TohruMKDM/lua-inflate#bitstream)
-### Bitstream:files()
+**Returns:** [BitStream](https://github.com/TohruMKDM/lua-inflate#bitstream)
+### BitStream:files()
 Returns an iterator that will span the list of files in the ZIP archive.
-|  Name  |   Type   |          Description          |
-| ------ | -------- | ----------------------------- |
-|  name  |  string  | The name of the file          |
-| offset | integer  | The position of the files     |
-|  size  | integer  | The size of the file          |
-| packed | boolean  | If the file is packed or not  |
+| Name | Type | Description |
+| - | - | - |
+| name | string | The name of the file |
+| offset | integer | The position of the files |
+| size | integer | The size of the file |
+| packed | boolean | If the file is packed or not |
+| crc | integer | A value to be used for checksum verification |
 
 **Returns:** function
-### Bitstream:inflate(offset)
-| Parameter |   Type   |
-| --------- | -------- |
-|  offset   | integer  |
+### BitStream:inflate(offset, crc)
+| Parameter | Type | Description | Optional |
+| - | - | - | - |
+| offset | integer | The offset at which to begin inflating | ✘ |
+| crc | integer | The value to use in checksum verification | ✓ |
 
-Inflates the bitstream at the specified position offset and returns the unpacked contents.</br>
+Inflates the bitstream at the specified position offset and optionally perform checksum verification. Returns the inflated contents.</br>
 **Returns:** string
-### Bitstream:unzip(filepath)
-| Parameter |   Type   |
-| --------- | -------- |
-| filepath  |  string  |
+### Bitstream:unzip(filepath, verify)
+| Parameter | Type | Description | Optional |
+| - | - | - | - |
+| filepath | string | The name of the file within the zip archive | ✘ |
+| verify | boolean | Whether or not to perform checksum verification on the unzipped file | ✓ |
 
-Unpacks a specific file from the ZIP archive.</br>
+Unpacks a specific file from the ZIP archive and optionally perform checksum verification.</br>
 **Returns:** string
 ### Bitstream:extract(offset, size)
-| Parameter |   Type   | 
-| --------- | -------- |
-|  offset   | integer  |
-|   size    | integer  |
+| Parameter | Type | 
+| - | - |
+| offset | integer |
+| size | integer |
 
-Extracts content from the ZIP archive with the specified offset and size. Used for extracting unpacked content.</br>
+Extracts content directly from the ZIP archive with the specified offset and size. Used for extracting unpacked content.</br>
 **Returns:** string
 ## Performance
 I was able to reach speeds of ~30MB/s under LuaJIT which is pretty fast when you keep in mind that this is written in pure Lua.</br>
 I was also able to inflate a relatively large ZIP archive (162MB) a little over 4 seconds faster than the original source.
-![image](https://user-images.githubusercontent.com/100388505/190425983-8fe35511-1bb7-4e54-bfec-f972b65b0837.png)
+![image](https://user-images.githubusercontent.com/100388505/190425983-8fe35511-1bb7-4e54-bfec-f972b65b0837.png)</br>
+My results from `bench.lua`
+```
+'inflate'       8.1698002800003 0.81698002800003
+'inflateCrc'    8.6834577949994 0.86834577949994
+'zzlib' 18.384467002999 1.8384467002999
+'zzlibCrc'      19.173533376001 1.9173533376001
+'miniz' 1.1439774689989 0.11439774689989
+```
+**Note:** While there is a noticable improvement in speed from the original source, ZIP inflation in pure Lua is still considerably slower than it's C/C++ counterparts and if you're working in a Lua environment where C modules such as `miniz` are present or available then I highly reccommend you use those opposed to this one. This was mostly made for use in environments where using modules such as `miniz` was not possible.
+
