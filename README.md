@@ -33,13 +33,6 @@ end
 print('Done.')
 ```
 ## API Reference
-### BitStream
-| Fields | Type | Default | Description |
-| - | - | - | - |
-| buffer | string | nil | Character buffer |
-| position | integer | 0 | Position in the character buffer |
-| bits | integer | 0 | Bits buffer |
-| count | integer | 0 | Number of bits in the buffer |
 
 ### inflate.new(buffer)
 | Parameter | Type | Description |
@@ -48,6 +41,24 @@ print('Done.')
 
 Creates a new bitstream object with the specified buffer string.</br>
 **Returns:** [BitStream](https://github.com/TohruMKDM/lua-inflate#bitstream)
+
+### inflate.setChunkSize(size)
+| Parameter | Type | Description
+| - | - | - |
+| size | integer | The new chunk size. Preferrably a value with a power of 2 |
+
+Sets the size at which to divide chunks by during byte to string conversion. The default value is `4096`. </br>
+If you encounter any issues with the lua stack it is advised you use this function to lower the chunk size to something like `2048` or even `1024`.
+**Returns:** nothing
+
+### BitStream
+| Fields | Type | Default | Description |
+| - | - | - | - |
+| buffer | string | nil | Character buffer |
+| position | integer | 0 | Position in the character buffer |
+| bits | integer | 0 | Bits buffer |
+| count | integer | 0 | Number of bits in the buffer |
+
 ### BitStream:files()
 Returns an iterator that will span the list of files in the ZIP archive.
 | Name | Type | Description |
